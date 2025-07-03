@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mechanic Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1><img src="2.png" alt="Logo" class="logo"> Mechanic Finder</h1>
+    <button class="theme-toggle" onclick="toggleDarkMode()">🌙</button>
+  </header>
+
+  <main>
+    <div class="button-group reveal">
+      <button class="btn primary" onclick="sendLocation()">📍 Send My Location</button>
+      <a href="register.html"><button class="btn secondary">🔧 Register as Mechanic</button></a>
+    </div>
+
+    <!-- 🔄 Loader -->
+    <div id="loader" class="loader" style="display: none;"></div>
+
+    <!-- ✅ Mechanic Results -->
+    <div id="mechanics" class="results reveal"></div>
+  </main>
+
+  <footer class="reveal">
+    &copy; 2025 Mechanic Finder. All rights reserved.
+  </footer>
+
+  <script>
+    // 📍 Send location to backend
+    async function sendLocation() {
+      const loader = document.getElementById("loader");
+      const output = document.getElementById("mechanics");
+      output.innerHTML = "";
+      loader.style.display = "block";
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("📍 Your Coordinates =>", latitude, longitude);
+
+          try {
+            const res = await fetch('http://localhost:3000/api/nearby-mechanics', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ latitude, longitude })
+            });
+
+            const data = await res.json();
+            loader.style.display = "none";
+
+            if (data.mechanics.length === 0) {
+              output.innerHTML = `<p class="status-text">😕 No mechanics found nearby (within 10km).</p>`;
+            } else {
+              output.innerHTML = `<h3>Nearby Mechanics:</h3>` + data.mechanics.map(m => `
+                <div class="card reveal">
+                  <strong>${m.name}</strong><br>
+                  📞 <b>Phone:</b> ${m.phone}<br>
+                  📍 <b>Address:</b> ${m.address}<br>
+                  📏 <b>Distance:</b> ${(m.distance / 1000).toFixed(2)} km
+                </div>
+              `).join('');
+            }
+
+            window.dispatchEvent(new Event("scroll")); // reveal effect
+          } catch (err) {
+            loader.style.display = "none";
+            alert("❌ Error getting mechanics.");
+            console.error(err);
+          }
+
+        }, (error) => {
+          loader.style.display = "none";
+          alert("❌ Location access denied or unavailable.");
+          console.error(error);
+        });
+      } else {
+        alert("❌ Geolocation is not supported by your browser.");
+        loader.style.display = "none";
+      }
+    }
+
+    // 🌙 Dark Mode Toggle
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    // ✨ Scroll Reveal Effect
+    window.addEventListener("scroll", () => {
+      document.querySelectorAll('.reveal').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 100) {
+          el.classList.add("visible");
+        }
+      });
+    });
+
+    window.onload = () => {
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.body.classList.add("dark-mode");
+      }
+      window.dispatchEvent(new Event("scroll"));
+    };
+  </script>
+</body>
+</html>

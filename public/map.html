@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Mechanic Map with Distance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let userLat = null, userLng = null;
+    const map = L.map('map').setView([16.5, 81.1], 9);
+
+    // 🗺️ Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // 📍 Get User Location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+
+        // 🔵 User marker
+        L.marker([userLat, userLng], {
+          icon: L.icon({
+            iconUrl: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32]
+          })
+        }).addTo(map)
+          .bindPopup("<b>You are here</b>")
+          .openPopup();
+
+        map.setView([userLat, userLng], 12);
+
+        // 🚀 Load mechanics AFTER getting user location
+        loadMechanics();
+      }, (err) => {
+        alert("Error getting location: " + err.message);
+        loadMechanics(); // fallback
+      });
+    } else {
+      alert("Geolocation not supported.");
+      loadMechanics(); // fallback
+    }
+
+    // 📏 Calculate distance between two lat/lng points (Haversine formula)
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Earth radius in km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // 🧰 Load all mechanics from backend
+    function loadMechanics() {
+      fetch('http://localhost:3000/api/all-mechanics')
+        .then(res => res.json())
+        .then(data => {
+          data.mechanics.forEach(m => {
+            const [lng, lat] = m.location.coordinates;
+
+            let distanceText = '';
+            if (userLat !== null && userLng !== null) {
+              const distance = getDistanceKm(userLat, userLng, lat, lng);
+              distanceText = `<br>📏 <b>${distance.toFixed(2)} km</b> from you`;
+            }
+
+            L.marker([lat, lng]).addTo(map)
+              .bindPopup(`
+                <b>${m.name}</b><br>
+                📍 ${m.address}<br>
+                📞 ${m.phone}
+                ${distanceText}
+              `);
+          });
+        })
+        .catch(err => {
+          console.error("Failed to load mechanics:", err);
+        });
+    }
+  </script>
+</body>
+</html>

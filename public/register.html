@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mechanic Registration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>👨‍🔧 Register as a Mechanic</h1>
+    <p>Share your location to help drivers in need</p>
+  </header>
+
+  <main>
+    <form id="mechanicForm">
+      <label>Name:</label>
+      <input type="text" name="name" required />
+
+      <label>Phone:</label>
+      <input type="text" name="phone" required />
+
+      <label>Address:</label>
+      <input type="text" name="address" required />
+
+      <label>Latitude:</label>
+      <input type="text" id="latitude" name="latitude" required readonly />
+
+      <label>Longitude:</label>
+      <input type="text" id="longitude" name="longitude" required readonly />
+
+      <button type="button" class="btn secondary" onclick="getLocation()">📍 Get My Location</button>
+      <button type="submit" class="btn primary">✅ Register</button>
+
+      <p id="status" class="status-text"></p>
+    </form>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Mechanic Finder</p>
+  </footer>
+
+  <script>
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+          document.getElementById('latitude').value = position.coords.latitude;
+          document.getElementById('longitude').value = position.coords.longitude;
+        }, (err) => {
+          alert("❌ Error getting location: " + err.message);
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    document.getElementById('mechanicForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const data = {
+        name: formData.get('name'),
+        phone: formData.get('phone'),
+        address: formData.get('address'),
+        latitude: parseFloat(formData.get('latitude')),
+        longitude: parseFloat(formData.get('longitude'))
+      };
+
+      const res = await fetch('http://localhost:3000/api/register-mechanic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      document.getElementById('status').innerText = result.message || result.error;
+    });
+  </script>
+</body>
+</html>

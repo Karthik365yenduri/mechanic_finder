@@ -1,0 +1,235 @@
+/* === Reset === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* === Body Base === */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  color: #fff;
+  line-height: 1.6;
+  padding: 20px;
+  overflow-x: hidden;
+  min-height: 100vh;
+  background: none;
+  position: relative;
+}
+
+/* === Animated Gradient + Blurred Parallax === */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(-45deg, #1d2671, #c33764, #0f2027, #2c5364);
+  background-size: 600% 600%;
+  animation: animatedGradient 12s ease infinite;
+  z-index: -2;
+  filter: blur(4px);
+  background-attachment: fixed;
+}
+
+/* === Gradient Animation === */
+@keyframes animatedGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* === Header === */
+header {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 30px 20px;
+  border-radius: 16px;
+  text-align: center;
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: slideDown 1s ease-in-out;
+}
+
+header h1 {
+  font-size: 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+header img.logo {
+  width: 40px;
+  height: 40px;
+}
+
+/* === Slide animation === */
+@keyframes slideDown {
+  from { transform: translateY(-30px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* === Theme Toggle === */
+.theme-toggle {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: #ffffff33;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* === Main === */
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+/* === Buttons === */
+.btn {
+  padding: 14px 28px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  min-width: 220px;
+  transition: all 0.3s ease;
+}
+
+.btn.primary {
+  background-color: #00bcd4;
+  color: white;
+}
+.btn.primary:hover {
+  background-color: #0097a7;
+  transform: translateY(-2px);
+}
+
+.btn.secondary {
+  background-color: #eeeeee;
+  color: #333;
+}
+.btn.secondary:hover {
+  background-color: #ddd;
+  transform: translateY(-2px);
+}
+
+/* === Glassmorphism Cards & Forms === */
+form, .card {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 25px 30px;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  max-width: 500px;
+  width: 100%;
+  color: #fff;
+  animation: fadeIn 1s ease forwards;
+}
+
+/* === Inputs === */
+input[type="text"],
+input[type="tel"],
+input[type="number"],
+input[type="email"] {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: none;
+  margin-top: 4px;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+input:focus {
+  outline: 2px solid #00bcd4;
+}
+
+/* === Labels === */
+label {
+  font-weight: 600;
+  align-self: flex-start;
+  margin-top: 10px;
+}
+
+/* === Mechanics Result === */
+.results, #mechanics {
+  margin-top: 20px;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* === Cards Hover === */
+.card:hover {
+  transform: scale(1.02);
+  transition: all 0.3s ease;
+}
+
+/* === Status Message === */
+.status-text {
+  font-weight: bold;
+  font-size: 1.05rem;
+  color: #76ff03;
+  margin-top: 10px;
+}
+
+/* === Footer === */
+footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* === Loader Spinner === */
+.loader {
+  border: 6px solid rgba(255, 255, 255, 0.2);
+  border-top: 6px solid #00bcd4;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* === Scroll Reveal === */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === Responsive === */
+@media (max-width: 600px) {
+  .btn {
+    width: 100%;
+  }
+
+  form, .card {
+    width: 90%;
+  }
+
+  header h1 {
+    font-size: 1.8rem;
+  }
+}
