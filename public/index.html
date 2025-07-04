@@ -10,7 +10,6 @@
 
   <header>
     <h1><img src="2.png" alt="Logo" class="logo"> Mechanic Finder</h1>
-    <button class="theme-toggle" onclick="toggleDarkMode()">🌙</button>
   </header>
 
   <main>
@@ -38,50 +37,54 @@
       output.innerHTML = "";
       loader.style.display = "block";
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log("📍 Your Coordinates =>", latitude, longitude);
-
-          try {
-            const res = await fetch('http://localhost:3000/api/nearby-mechanics', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ latitude, longitude })
-            });
-
-            const data = await res.json();
-            loader.style.display = "none";
-
-            if (data.mechanics.length === 0) {
-              output.innerHTML = `<p class="status-text">😕 No mechanics found nearby (within 10km).</p>`;
-            } else {
-              output.innerHTML = `<h3>Nearby Mechanics:</h3>` + data.mechanics.map(m => `
-                <div class="card reveal">
-                  <strong>${m.name}</strong><br>
-                  📞 <b>Phone:</b> ${m.phone}<br>
-                  📍 <b>Address:</b> ${m.address}<br>
-                  📏 <b>Distance:</b> ${(m.distance / 1000).toFixed(2)} km
-                </div>
-              `).join('');
-            }
-
-            window.dispatchEvent(new Event("scroll")); // reveal effect
-          } catch (err) {
-            loader.style.display = "none";
-            alert("❌ Error getting mechanics.");
-            console.error(err);
-          }
-
-        }, (error) => {
-          loader.style.display = "none";
-          alert("❌ Location access denied or unavailable.");
-          console.error(error);
-        });
-      } else {
+      if (!navigator.geolocation) {
         alert("❌ Geolocation is not supported by your browser.");
         loader.style.display = "none";
+        return;
       }
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log("📍 Your Coordinates =>", latitude, longitude);
+
+        try {
+          const res = await fetch('/api/nearby-mechanics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ latitude, longitude })
+          });
+
+          if (!res.ok) {
+            throw new Error("Network response was not ok");
+          }
+
+          const data = await res.json();
+          loader.style.display = "none";
+
+          if (!data.mechanics || data.mechanics.length === 0) {
+            output.innerHTML = `<p class="status-text">😕 No mechanics found nearby (within 10km).</p>`;
+          } else {
+            output.innerHTML = `<h3>Nearby Mechanics:</h3>` + data.mechanics.map(m => `
+              <div class="card reveal">
+                <strong>${m.name}</strong><br>
+                📞 <b>Phone:</b> ${m.phone}<br>
+                📍 <b>Address:</b> ${m.address}<br>
+                📏 <b>Distance:</b> ${(m.distance / 1000).toFixed(2)} km
+              </div>
+            `).join('');
+          }
+
+          window.dispatchEvent(new Event("scroll")); // For reveal animations
+        } catch (err) {
+          loader.style.display = "none";
+          alert("❌ Error getting mechanics.");
+          console.error(err);
+        }
+      }, (error) => {
+        loader.style.display = "none";
+        alert("❌ Location access denied or unavailable.");
+        console.error(error);
+      });
     }
 
     // 🌙 Dark Mode Toggle
